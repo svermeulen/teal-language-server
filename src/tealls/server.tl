@@ -33,7 +33,7 @@ local server <const> = {
       definitionProvider = true,
       -- typeDefinitionProvider = true,
       -- completionProvider = {
-         -- triggerCharacters = { ".", ":" },
+      --    triggerCharacters = { ".", ":" },
       -- },
    },
 }

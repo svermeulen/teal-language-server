@@ -66,6 +66,30 @@ local function get_doc(params: Params): document.Document
    return document.get(uri.parse(td.uri))
 end
 
+handlers["textDocument/didChange"] = function(params: Params)
+   local td <const> = params.textDocument as lsp.TextDocument
+   local doc <const> = document.get(uri.parse(td.uri))
+
+   if not doc then
+      util.log("Unable to find document: ", td.uri)
+      return
+   end
+
+   local changes = params.contentChanges as {lsp.TextDocumentContentChangeEvent}
+   
+   for _, v in ipairs(changes) do
+      if v.range == nil then
+         util.log("Received full update")
+         doc:update_text(v.text)
+         break
+      else
+         util.log("Received partial update - TODO implement support for this")
+      end
+   end
+
+   doc:process_and_publish_results()
+end
+
 handlers["textDocument/didSave"] = function(params: Params)
    local td <const> = params.textDocument as lsp.TextDocument
    local doc <const> = document.get(uri.parse(td.uri))
@@ -75,6 +99,34 @@ handlers["textDocument/didSave"] = function(params: Params)
    end
    doc:update_text(params.text as string)
    doc:process_and_publish_results()
+end
+
+handlers["textDocument/completion"] = function(params: Params, id: integer)
+
+   local doc <const> = get_doc(params)
+   if not doc then
+      rpc.respond(id, nil)
+   end
+
+   local pos <const> = params.position as lsp.Position
+   local line = doc:get_line(pos.line + 1)
+   local identifier = line:sub(1, pos.character - 1):match("(%w+)$")
+
+   util.log("Looking up type info for identifier: '" .. identifier .. "'")
+
+   local info <const> = doc:get_type_info_for_symbol(identifier, pos)
+   local items:{any} = { }
+
+   if info then
+      for key, _ in pairs(info.fields) do
+         table.insert(items, {label = key})
+      end
+   end
+
+   rpc.respond(id, {
+      isIncomplete = false,
+      items = items
+   })
 end
 
 handlers["textDocument/definition"] = function(params: Params, id: integer)
@@ -119,6 +171,7 @@ handlers["textDocument/definition"] = function(params: Params, id: integer)
 end
 
 handlers["textDocument/hover"] = function(params: Params, id: integer)
+
    local doc <const> = get_doc(params)
    if not doc then
       return
@@ -132,6 +185,9 @@ handlers["textDocument/hover"] = function(params: Params, id: integer)
       return
    end
    local info <const> = doc:type_information_at(pos)
+
+   util.log("Found type info: ", info)
+
    if not info then
       rpc.respond(id, {
          contents = { tk .. ":", " No info found " },
@@ -157,6 +213,7 @@ return setmetatable({}, {
    __index = function(_self: {Name:Method}, key: Name): Method
       util.log("   getting handler for ", key)
       local f <const> = rawget(handlers, key)
+
       return f and function(p: Params, id: integer)
          util.log("   calling handler for '", key, "' with")
          util.log("          id: ", id)

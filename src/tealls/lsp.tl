@@ -84,6 +84,7 @@ local record lsp
          "textDocument/hover"
          "textDocument/definition"
          "textDocument/publishDiagnostics"
+         "textDocument/completion"
       end
 
       type Params = {integer|string:JsonValue} -- should be JsonObject | {JsonValue}

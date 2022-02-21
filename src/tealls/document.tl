@@ -22,6 +22,7 @@ local type Node = any
 local record Document
    uri: uri.ParsedUri
    text: string
+   lines: {string}
 end
 
 local record Cache
@@ -109,6 +110,11 @@ end
 function Document:update_text(text: string)
    private_cache[self] = nil
    self.text = text
+   self.lines = {}
+
+   for x in (text .. "\n"):gmatch("([^\n]*)\n") do
+      table.insert(self.lines, x)
+   end
 end
 
 local cache <const>: {string:Document} = {}
@@ -214,6 +220,29 @@ function Document:process_and_publish_results()
    insert_errs(fname, diags, tks, werrors, "Error")
    insert_errs(fname, diags, tks, result.type_errors, "Error")
    methods.publish_diagnostics(uri.tostring(self.uri), diags)
+end
+
+function Document:get_line(line: integer): string
+   if line >= 1 and line <= #self.lines then
+      return self.lines[line]
+   end
+
+   return nil
+end
+
+function Document:get_type_info_for_symbol(identifier:string, where: lsp.Position): tl.TypeInfo
+   local tr <const> = self:get_type_report()
+   if not tr then
+      return nil
+   end
+   local symbols = tl.symbols_in_scope(tr, where.line + 1, where.character + 1)
+   local type_id <const> = symbols[identifier]
+
+   if not type_id then
+      return nil
+   end
+
+   return tr.types[type_id] or tr.types[tr.globals[identifier]]
 end
 
 function Document:type_information_at(where: lsp.Position): tl.TypeInfo
