@@ -335,20 +335,24 @@ function Document:type_information_at(where: lsp.Position): tl.TypeInfo
 
    -- I don't know why we have to check both character and character-1 here
    -- For some reason, deref tokens are indexed by the `.` so we need character-1 for those cases
-   local type_id = line_info[where.character] or line_info[where.character-1]
-   local type_info = tr.types[type_id]
+   local local_type_id = line_info[where.character] or line_info[where.character-1]
+   local local_type_info = tr.types[local_type_id]
 
-   if type_info ~= nil then
-      return type_info
+   if local_type_info ~= nil then
+      if local_type_info.ref ~= nil then
+         return tr.types[local_type_info.ref]
+      end
+
+      return local_type_info
    end
 
-   local tk <const> = get_raw_token_at(self:get_tokens(), where.line + 1, where.character + 1)
+   local tk <const> = get_raw_token_at(self:get_tokens(), where.line, where.character-1)
 
-   if not tk then
-      return nil
+   if tk then
+      return tr.types[tr.globals[tk]]
    end
 
-   return tr.types[tr.globals[tk]]
+   return nil
 end
 
 local function indent(n: number): string
