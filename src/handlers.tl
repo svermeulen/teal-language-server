@@ -136,12 +136,13 @@ handlers["textDocument/definition"] = function(params: Params, id: integer)
       return
    end
    local pos <const> = params.position as lsp.Position
-   local tk <const> = doc:raw_token_at(pos)
+   local tk <const> = doc:token_at(pos)
    if not tk then
       rpc.respond(id, nil)
       return
    end
-   local info <const> = doc:type_information_at(pos)
+   local token_pos = lsp.position(tk.y, tk.x)
+   local info <const> = doc:type_information_at(token_pos)
 
    if not info or info.file == nil then
       rpc.respond(id, nil)
