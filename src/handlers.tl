@@ -149,7 +149,7 @@ handlers["textDocument/definition"] = function(params: Params, id: integer)
       return
    end
    local pos <const> = params.position as lsp.Position
-   local tk <const> = doc:token_at(pos)
+   local tk <const> = doc:raw_token_at(pos)
    if not tk then
       rpc.respond(id, nil)
       return
@@ -199,13 +199,14 @@ handlers["textDocument/hover"] = function(params: Params, id: integer)
       })
       return
    end
-   local info <const> = doc:type_information_at(pos)
+   local token_pos = lsp.position(tk.y, tk.x)
+   local info <const> = doc:type_information_at(token_pos)
    if not info then
       rpc.respond(id, {
-         contents = { tk .. ":", " No info found " },
+         contents = { tk.tk .. ":", " No info found " },
          range = {
-            start = lsp.position(pos.line, pos.character),
-            ["end"] = lsp.position(pos.line, pos.character + #tk),
+            start = lsp.position(token_pos.line, token_pos.character),
+            ["end"] = lsp.position(token_pos.line, token_pos.character + #tk.tk),
          },
       })
       return
@@ -215,10 +216,10 @@ handlers["textDocument/hover"] = function(params: Params, id: integer)
 
    local type_str <const> = doc:show_type(info)
    rpc.respond(id, {
-      contents = { tk .. ":", type_str },
+      contents = { tk.tk .. ":", type_str },
       range = {
-         start = lsp.position(pos.line, pos.character),
-         ["end"] = lsp.position(pos.line, pos.character + #tk),
+         start = lsp.position(token_pos.line, token_pos.character),
+         ["end"] = lsp.position(token_pos.line, token_pos.character + #tk.tk),
       },
    })
 end

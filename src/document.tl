@@ -163,11 +163,51 @@ function document.get(u: uri.ParsedUri): Document
    return cache[u.path]
 end
 
-local get_token_at <const> = tl.get_token_at as function({Token}, number, number): string
+local function binary_search<T, U>(list: {T}, item: U, cmp: function(T, U): boolean): integer, T
+   local len <const> = #list
+   local mid: integer
+   local s, e = 1, len
+   while s <= e do
+      mid = math.floor((s + e) / 2)
+      local val <const> = list[mid]
+      local res <const> = cmp(val, item)
+      if res then
+         if mid == len then
+            return mid, val
+         else
+            if not cmp(list[mid + 1], item) then
+               return mid, val
+            end
+         end
+         s = mid + 1
+      else
+         e = mid - 1
+      end
+   end
+end
+
+local get_raw_token_at <const> = tl.get_token_at as function({Token}, number, number): string
+
+local function get_token_at(tks: {Token}, y: integer, x: integer): Token
+   local _, found <const> = binary_search(
+      tks, nil,
+      function(tk: Token): boolean
+         return tk.y < y
+            or (tk.y == y and tk.x <= x)
+      end
+   )
+
+   if found
+      and found.y == y
+      and found.x <= x and x < found.x + #found.tk
+   then
+      return found
+   end
+end
 
 local function make_diagnostic_from_error(tks: {Token}, err: tl.Error, severity: lsp.Severity): lsp.Diagnostic
    local x <const>, y <const> = err.x, err.y
-   local err_tk <const> = get_token_at(tks, y, x)
+   local err_tk <const> = get_raw_token_at(tks, y, x)
    return {
       range = {
          start = {
@@ -280,14 +320,35 @@ end
 
 function Document:type_information_at(where: lsp.Position): tl.TypeInfo
    local tr <const>, _ = self:get_type_report()
-   local tk <const> = get_token_at(self:get_tokens(), where.line + 1, where.character + 1)
-   if not tk then
-      return
-   end
-   local symbols <const> = tl.symbols_in_scope(tr, where.line + 1, where.character + 1)
-   local type_id <const> = symbols[tk]
 
-   return tr.types[type_id] or tr.types[tr.globals[tk]]
+   local file_info = tr.by_pos[self.uri.path]
+
+   if file_info == nil then
+      return nil
+   end
+
+   local line_info = file_info[where.line]
+
+   if line_info == nil then
+      return nil
+   end
+
+   -- I don't know why we have to check both character and character-1 here
+   -- For some reason, deref tokens are indexed by the `.` so we need character-1 for those cases
+   local type_id = line_info[where.character] or line_info[where.character-1]
+   local type_info = tr.types[type_id]
+
+   if type_info ~= nil then
+      return type_info
+   end
+
+   local tk <const> = get_raw_token_at(self:get_tokens(), where.line + 1, where.character + 1)
+
+   if not tk then
+      return nil
+   end
+
+   return tr.types[tr.globals[tk]]
 end
 
 local function indent(n: number): string
@@ -381,7 +442,11 @@ function Document:show_type(info: tl.TypeInfo, depth: number): string
    end
 end
 
-function Document:token_at(where: lsp.Position): string
+function Document:raw_token_at(where: lsp.Position): string
+   return get_raw_token_at(self:get_tokens(), where.line + 1, where.character + 1)
+end
+
+function Document:token_at(where: lsp.Position): Token
    return get_token_at(self:get_tokens(), where.line + 1, where.character + 1)
 end
 
