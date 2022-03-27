@@ -270,7 +270,7 @@ function Document:get_type_info_for_symbol(identifier:string, where: lsp.Positio
    end
 
    if result == nil then
-      util.log("Failed to find type id for identifier '", identifier, "'.  Available symbols: ", symbols)
+      util.log("Failed to find type id for identifier '", identifier, "'.  Available symbols: Locals: ", symbols, ".  Globals: ", tr.globals)
    else
       util.log("Successfully found type id for given identifier '", identifier, "'")
    end
