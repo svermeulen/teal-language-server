@@ -259,14 +259,23 @@ function Document:get_type_info_for_symbol(identifier:string, where: lsp.Positio
    local tr <const>, _ = self:get_type_report()
    local symbols = tl.symbols_in_scope(tr, where.line + 1, where.character + 1)
    local type_id <const> = symbols[identifier]
+   local result:tl.TypeInfo = nil
 
-   if not type_id then
-      util.log("Failed to find type id for identifier '", identifier, "'.  Available symbols: ", symbols)
-      return nil
+   if type_id ~= nil then
+      result = tr.types[type_id]
    end
 
-   util.log("Successfully found type id for given identifier '", identifier, "'")
-   return tr.types[type_id] or tr.types[tr.globals[identifier]]
+   if result == nil then
+      result = tr.types[tr.globals[identifier]]
+   end
+
+   if result == nil then
+      util.log("Failed to find type id for identifier '", identifier, "'.  Available symbols: ", symbols)
+   else
+      util.log("Successfully found type id for given identifier '", identifier, "'")
+   end
+
+   return result
 end
 
 function Document:type_information_at(where: lsp.Position): tl.TypeInfo
