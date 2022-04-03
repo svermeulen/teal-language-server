@@ -6,6 +6,7 @@ local handlers <const> = require("tealls.handlers")
 local util <const> = require("tealls.util")
 
 local args <const>: {string:string} = {}
+
 -- very simple arg parsing
 -- just match args that look like "foo=bar" and put them in a map
 -- we don't need more than this since it will mostly be editor plugins using these anyway
@@ -16,6 +17,9 @@ for _, v in ipairs(arg) do
    end
 end
 
+-- This is necessary otherwise the logic in poll.c will
+-- think there's no data available when there is (because
+-- the lua side consumes it as part of buffer)
 io.stdin:setvbuf  'no'
 io.stdout:setvbuf 'no'
 
