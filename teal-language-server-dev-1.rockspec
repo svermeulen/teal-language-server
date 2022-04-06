@@ -19,7 +19,7 @@ dependencies = {
 build = {
    type = "builtin",
    modules = {
-		["tealls.poll"] = "src/poll.c",
+		["tealls.poll"] = "src/tealls/poll.c",
 
       ["tealls.document"] = "build/tealls/document.lua",
       ["tealls.handlers"] = "build/tealls/handlers.lua",
@@ -34,17 +34,17 @@ build = {
    },
    install = {
       lua = {
-         ["tealls.poll"] = "src/poll.d.tl",
-         ["tealls.document"] = "src/document.tl",
-         ["tealls.handlers"] = "src/handlers.tl",
-         ["tealls.init"] = "src/init.tl",
-         ["tealls.loop"] = "src/loop.tl",
-         ["tealls.lsp"] = "src/lsp.tl",
-         ["tealls.methods"] = "src/methods.tl",
-         ["tealls.rpc"] = "src/rpc.tl",
-         ["tealls.server"] = "src/server.tl",
-         ["tealls.uri"] = "src/uri.tl",
-         ["tealls.util"] = "src/util.tl",
+         ["tealls.poll"] = "src/tealls/poll.d.tl",
+         ["tealls.document"] = "src/tealls/document.tl",
+         ["tealls.handlers"] = "src/tealls/handlers.tl",
+         ["tealls.init"] = "src/tealls/init.tl",
+         ["tealls.loop"] = "src/tealls/loop.tl",
+         ["tealls.lsp"] = "src/tealls/lsp.tl",
+         ["tealls.methods"] = "src/tealls/methods.tl",
+         ["tealls.rpc"] = "src/tealls/rpc.tl",
+         ["tealls.server"] = "src/tealls/server.tl",
+         ["tealls.uri"] = "src/tealls/uri.tl",
+         ["tealls.util"] = "src/tealls/util.tl",
       },
       bin = {
          "bin/teal-language-server"
