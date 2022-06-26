@@ -155,6 +155,7 @@ handlers["textDocument/completion"] = function(params: Params, id: integer)
 end
 
 handlers["textDocument/definition"] = function(params: Params, id: integer)
+
    local doc <const> = get_doc(params)
    if not doc then
       return
@@ -180,11 +181,14 @@ handlers["textDocument/definition"] = function(params: Params, id: integer)
    if #info.file == 0 then
       file_uri = doc.uri
    else
-      local file_path = cyan_path.new(info.file)
-
-      if not file_path:is_absolute() then
-         file_path:prepend(server.root_dir)
+      local full_path:string
+      if info.file:sub(1, 1) == "/" then
+         full_path = info.file
+      else
+         full_path = server.root_dir .. "/" .. info.file
       end
+
+      local file_path = cyan_path.new(full_path)
 
       file_uri = uri.uri_from_path(file_path:to_real_path())
    end
