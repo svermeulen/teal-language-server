@@ -7,6 +7,7 @@ local server <const> = require("tealls.server")
 local tl <const> = require("tl")
 local uri <const> = require("tealls.uri")
 local util <const> = require("tealls.util")
+local inspect = require("inspect")
 
 local cyanutils <const> = require("cyan.util")
 local filter <const>, set <const>
@@ -319,7 +320,7 @@ function Document:type_information_at(where: lsp.Position): tl.TypeInfo
    local line_info = file_info[where.line]
 
    if line_info == nil then
-      util.log("Could not find line info for file '", self.uri.path, "' at position '", where, "'")
+      util.log("Could not find line info for file '", self.uri.path, "' at line '", where.line, "'")
       return nil
    end
 

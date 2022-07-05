@@ -15,6 +15,7 @@ dependencies = {
    "dkjson",
    "luafilesystem",
    "cyan",
+   "inspect",
 }
 build = {
    type = "builtin",
