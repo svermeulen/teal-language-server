@@ -77,6 +77,10 @@ function rpc.encode(t: {string:any})
 end
 
 function rpc.respond(id: integer, t: {string:any})
+   if t == nil then
+      t = {}
+   end
+   
    rpc.encode{
       jsonrpc = "2.0",
       id = json_nullable(id),
