@@ -19,6 +19,11 @@ end
 io.stdin:setvbuf  'no'
 io.stdout:setvbuf 'no'
 
+-- The read loop generates more garbage than Lua can collect by default.
+-- These values work so far. Keep an eye on the memory usage.
+collectgarbage("setpause", 110)
+collectgarbage("setstepmul", 1000)
+
 util.set_logging(args["logging"] == "on")
 util.log("args: ", args)
 
