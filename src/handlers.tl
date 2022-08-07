@@ -207,7 +207,7 @@ handlers["textDocument/hover"] = function(params: Params, id: integer)
    end
    local pos <const> = params.position as lsp.Position
 
-   util.log("Received request for hover at position: ", pos)
+   util.log("Received request for hover at position: ", pos.line, ":", pos.character)
 
    local tk <const> = doc:token_at(pos)
    if not tk then
@@ -218,7 +218,7 @@ handlers["textDocument/hover"] = function(params: Params, id: integer)
       return
    end
    local token_pos = lsp.position(tk.y, tk.x)
-   util.log("Found actual token '", tk.tk, "' at position: '", token_pos, "'")
+   util.log("Found actual token '", tk.tk, "' at position: ", token_pos.line, ":", token_pos.character)
    local type_info = doc:type_information_at(token_pos)
    if not type_info then
       util.log("No type information found at calculated token position.  Attempting to get type information by raw token instead.")
