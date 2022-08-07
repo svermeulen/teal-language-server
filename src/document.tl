@@ -319,7 +319,7 @@ function Document:type_information_at(where: lsp.Position): tl.TypeInfo
    local line_info = file_info[where.line]
 
    if line_info == nil then
-      util.log("Could not find line info for file '", self.uri.path, "' at position '", where, "'")
+      util.log("Could not find line info for file '", self.uri.path, "' at position ", where.line, ":", where.character)
       return nil
    end
 

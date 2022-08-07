@@ -110,7 +110,7 @@ handlers["textDocument/completion"] = function(params: Params, id: integer)
    local pos = params.position as lsp.Position
    pos.character = pos.character - 2
 
-   util.log("Received request for completion at position: ", pos)
+   util.log("Received request for completion at position: ", pos.line, ":", pos.character)
    local tk <const> = doc:token_at(pos)
 
    if not tk then
@@ -120,7 +120,7 @@ handlers["textDocument/completion"] = function(params: Params, id: integer)
    end
 
    local token_pos = lsp.position(tk.y, tk.x)
-   util.log("Found actual token '", tk.tk, "' at position: '", token_pos, "'")
+   util.log("Found actual token '", tk.tk, "' at position: ", token_pos.line, ":", token_pos.character)
 
    local type_info = doc:type_information_at(token_pos)
    local items:{any} = { }
