@@ -24,10 +24,10 @@ jobs:
         uses: leafo/gh-actions-luarocks@v4.0.0
 
       - name: Build
-        run: scripts/setup_local_luarocks.sh
+        run: bash scripts/setup_local_luarocks.sh
 
       - name: Lint
-        run: scripts/lint_teal.sh
+        run: bash scripts/lint_teal.sh
 
       - name: Check for untracked or modified files
         run: |
